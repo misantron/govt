@@ -773,6 +773,23 @@ func (client *Client) fetchApiJson(method string, actionurl string, parameters P
 	return nil
 }
 
+func (client *Client) fetchApiPostJsonWithResponse(action string, parameters Parameters, result interface{}) (resp *http.Response, err error) {
+	uri := client.url + action
+
+	resp, err = client.makeApiPostRequest(uri, parameters)
+	if err != nil {
+		return resp, err
+	}
+	defer resp.Body.Close()
+
+	dec := json.NewDecoder(resp.Body)
+	if err = dec.Decode(result); err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
+
 // fetchApiFile makes a get request to the API and returns the file content
 func (client *Client) fetchApiFile(actionurl string, parameters Parameters) (data []byte, err error) {
 	theurl := client.url + actionurl
@@ -810,10 +827,10 @@ func (client *Client) ScanUrl(url string) (r *ScanUrlResult, err error) {
 }
 
 // ScanUrls asks VT to redo analysis on the specified urls. Up to 25 urls.
-func (client *Client) ScanUrls(urls []string) (r *ScanUrlResults, err error) {
+func (client *Client) ScanUrls(urls []string) (r *ScanUrlResults, resp *http.Response, err error) {
 	r = &ScanUrlResults{}
-	err = client.fetchApiJson("POST", "url/scan", Parameters{"url": strings.Join(urls, "\n")}, r)
-	return r, err
+	resp, err = client.fetchApiPostJsonWithResponse("url/scan", Parameters{"url": strings.Join(urls, "\n")}, r)
+	return r, resp, err
 }
 
 // ScanFile asks VT to analysis on the specified file, thats also uploaded.
@@ -950,10 +967,10 @@ func (client *Client) GetFileFeed(packageRange string) ([]FileFeed, error) {
 
 // GetUrlReport fetches the AV scan reports tracked by VT given a URL.
 // Does not support the optional `scan` parameter.
-func (client *Client) GetUrlReport(url string) (r *UrlReport, err error) {
+func (client *Client) GetUrlReport(url string) (r *UrlReport, resp *http.Response, err error) {
 	r = &UrlReport{}
-	err = client.fetchApiJson("POST", "url/report", Parameters{"resource": url}, r)
-	return r, err
+	resp, err = client.fetchApiPostJsonWithResponse("url/report", Parameters{"resource": url}, r)
+	return r, resp, err
 }
 
 // GetUrlReports fetches AV scan reports tracked by VT given URLs.
