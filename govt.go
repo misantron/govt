@@ -975,11 +975,11 @@ func (client *Client) GetUrlReport(url string) (r *UrlReport, resp *http.Respons
 
 // GetUrlReports fetches AV scan reports tracked by VT given URLs.
 // Does not support the optional `scan` parameter.
-func (client *Client) GetUrlReports(urls []string) (r *UrlReports, err error) {
+func (client *Client) GetUrlReports(urls []string) (r *UrlReports, resp *http.Response, err error) {
 	r = &UrlReports{}
 	parameters := Parameters{"resource": strings.Join(urls, "\n")}
-	err = client.fetchApiJson("POST", "url/report", parameters, r)
-	return r, err
+	resp, err = client.fetchApiPostJsonWithResponse("url/report", parameters, r)
+	return r, resp, err
 }
 
 // GetIpReport fetches the passive DNS information about an IP address.
