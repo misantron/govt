@@ -820,10 +820,10 @@ func (client *Client) SearchFile(query, offset string) (r *FileSearchResult, err
 // Public API
 
 // ScanUrl asks VT to redo analysis on the specified url.
-func (client *Client) ScanUrl(url string) (r *ScanUrlResult, err error) {
+func (client *Client) ScanUrl(url string) (r *ScanUrlResult, resp *http.Response, err error) {
 	r = &ScanUrlResult{}
-	err = client.fetchApiJson("POST", "url/scan", Parameters{"url": url}, r)
-	return r, err
+	resp, err = client.fetchApiPostJsonWithResponse("url/scan", Parameters{"url": url}, r)
+	return r, resp, err
 }
 
 // ScanUrls asks VT to redo analysis on the specified urls. Up to 25 urls.
